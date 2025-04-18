@@ -44,27 +44,23 @@ public class Main {
             Arrays.fill(dp[i], -1);
         }
 
-        System.out.println(Math.max(recur(1, -1, 0), recur(1, -1, 1) + count[1]));
+        recur(1, -1);
+        System.out.println(Math.max(dp[0][1], dp[1][1]));
     }
 
-    private static int recur(int now, int prev, int onOff) {
-        if (dp[onOff][now] != -1) {
-            return dp[onOff][now];
-        }
+    private static void recur(int now, int prev) {
+        dp[0][now] = 0;
+        dp[1][now] = count[now];
 
-        dp[onOff][now] = 0;
         for (int next : graph[now]) {
             if (next == prev) {
                 continue;
             }
 
-            if (onOff == 0) {   // 우수마을 X, 현재 우수마을이 아닌 경우, 다음 마을은 우수마을일수도 아닐수도 있음.
-                dp[onOff][now] += Math.max(recur(next, now, 1) + count[next], recur(next, now, 0));
-            } else {    // 우수마을 O
-                dp[onOff][now] += recur(next, now, 0);  // 현재 우수마을인 경우, 다음 마을은 우수마을이 아님.
-            }
-        }
+            recur(next, now);
 
-        return dp[onOff][now];
+            dp[0][now] += Math.max(dp[0][next], dp[1][next]);
+            dp[1][now] += dp[0][next];
+        }
     }
 }
