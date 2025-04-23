@@ -5,23 +5,36 @@ import java.util.*;
 
 public class Main {
 
-    static int n;
-    static int m;
+    static final int MAX = 100_000_000;
 
+    static int n;   // 참석자 수
+    static int[] parent;
     static int[][] arr;
 
-    static boolean[] visited;
-
-    static List[] groupList;
+    static List<Integer>[] graph;
 
     public static void main(String[] args) throws IOException {
         BufferedReader bf = new BufferedReader(new InputStreamReader(System.in));
         StringTokenizer st;
 
         n = Integer.parseInt(bf.readLine());
-        m = Integer.parseInt(bf.readLine());
+
+        parent = new int[n + 1];
+        for (int i = 0; i < n + 1; i++) {
+            parent[i] = i;
+        }
 
         arr = new int[n + 1][n + 1];
+        for (int i = 0; i < n + 1; i++) {
+            for (int j = 0; j < n + 1; j++) {
+                if (i == j) {
+                    continue;
+                }
+                arr[i][j] = MAX;
+            }
+        }
+
+        int m = Integer.parseInt(bf.readLine());
         for (int i = 0; i < m; i++) {
             st = new StringTokenizer(bf.readLine());
             int a = Integer.parseInt(st.nextToken());
@@ -29,94 +42,77 @@ public class Main {
 
             arr[a][b] = 1;
             arr[b][a] = 1;
+
+            union(a, b);
         }
 
-        groupList = new List[100];
-        for (int i = 0; i < 100; i++) {
-            groupList[i] = new ArrayList<Integer>();
-        }
-
-        int groupIdx = 0;
-        visited = new boolean[n + 1];
-        for (int i = 1; i < n + 1; i++) {
-            if (!visited[i]) {
-                bfs(i, groupIdx++);
-            }
-        }
-
-        for (int i = 1; i < n + 1; i++) {
-            for (int j = 1; j < n + 1; j++) {
-                if (i == j) {
-                    continue;
-                }
-
-                if (arr[i][j] == 1) {
-                    continue;
-                }
-
-                arr[i][j] = 101;
-            }
-        }
-
+        // floyd warshall
         for (int k = 1; k < n + 1; k++) {
             for (int i = 1; i < n + 1; i++) {
                 for (int j = 1; j < n + 1; j++) {
-                    if (arr[i][j] > arr[i][k] + arr[k][j]) {
-                        arr[i][j] = arr[i][k] + arr[k][j];
-                    }
+                    arr[i][j] = Math.min(arr[i][j], arr[i][k] + arr[k][j]);
                 }
             }
         }
 
-        List<Integer> ansList = new ArrayList<>();
-        for (int i = 0; i < groupList.length; i++) {
-            if (groupList[i].isEmpty()) {
-                break;
-            }
+        // 참가자 한 명씩 탐색
+        // <해당 참가자가 속한 루트 노드 : {의사전달시간, 해당 참가자}>
+        Map<Integer, int[]> map = new HashMap<>();
+        for (int i = 1; i < n + 1; i++) {
+            int p = find(i);
 
-            int min = Integer.MAX_VALUE;
-            int minNode = 0;
-
-            for (int j = 0; j < groupList[i].size(); j++) {
-                int node1 = (int) groupList[i].get(j);
-                int max = 0;
-                for (int k = 0; k < groupList[i].size(); k++) {
-                    int node2 = (int) groupList[i].get(k);
-                    max = Math.max(max, arr[node1][node2]);
+            int max = Integer.MIN_VALUE;
+            for (int j = 1; j < n + 1; j++) {
+                if (arr[i][j] == MAX) { // 연결되지 않은 부분
+                    continue;
                 }
 
-                if (max < min) {
-                    min = max;
-                    minNode = node1;
-                }
+                // 최대 의사전달시간
+                max = Math.max(max, arr[i][j]);
             }
 
-            ansList.add(minNode);
+            if (map.containsKey(p)) {
+                // 저장된 의사전달시간 > 현재 구한 의사전달시간
+                if (map.get(p)[0] > max) {
+                    map.put(p, new int[]{max, i});
+                }
+            } else {
+                map.put(p, new int[]{max, i});
+            }
         }
 
-        Collections.sort(ansList);
-        System.out.println(ansList.size());
-        for (Integer node : ansList) {
-            System.out.println(node);
+        System.out.println(map.size());
+        List<Integer> answer = new ArrayList<>();
+        for (int key : map.keySet()) {
+            answer.add(map.get(key)[1]);
+        }
+
+        Collections.sort(answer);
+        for (int ans : answer) {
+            System.out.println(ans);
         }
     }
 
-    private static void bfs(int cur, int groupIdx) {
-        Queue<Integer> queue = new ArrayDeque<>();
-        queue.add(cur);
-        groupList[groupIdx].add(cur);
-        visited[cur] = true;
+    private static void union(int a, int b) {
+        int pa = find(a);
+        int pb = find(b);
 
-        while (!queue.isEmpty()) {
-            Integer now = queue.poll();
-
-            for (int i = 1; i < n + 1; i++) {
-                if (arr[now][i] == 1 && !visited[i]) {
-                    queue.add(i);
-                    groupList[groupIdx].add(i);
-                    visited[i] = true;
-                }
-            }
+        if (pa == pb) {
+            return;
         }
+
+        if (pa < pb) {
+            parent[pb] = pa;
+        } else {
+            parent[pa] = pb;
+        }
+    }
+
+    private static int find(int a) {
+        if (parent[a] != a) {
+            parent[a] = find(parent[a]);
+        }
+
+        return parent[a];
     }
 }
