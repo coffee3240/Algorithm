@@ -26,8 +26,6 @@ public class Main {
             arr[i] = Integer.parseInt(st.nextToken());
         }
 
-        Map<Integer, Integer> countMap = new HashMap<>();
-
         combHalf(0,0);
         combHalfAndMatch(n / 2,0);
 
