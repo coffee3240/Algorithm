@@ -2,16 +2,15 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.StringTokenizer;
 
 public class Main {
 
     static int n, t; // 서브태스크 개수, 대회 제한 시간
-    static int[][] scoreArr; // 서브태스크 배점
-    static int[][] timeArr; // 문제 푸는데 걸리는 시간
-
-    static List<ScoreTime>[] stList;
+    static int[][] scoreArr;
+    static int[][] timeArr;
 
     public static void main(String[] args) throws IOException {
         BufferedReader bf = new BufferedReader(new InputStreamReader(System.in));
@@ -22,100 +21,47 @@ public class Main {
         t = Integer.parseInt(st.nextToken());
 
         // 점수 입력
-        scoreArr = new int[3][n];
+        scoreArr = new int[3][n + 1];
         for (int i = 0; i < 3; i++) {
             st = new StringTokenizer(bf.readLine());
-            for (int j = 0; j < n; j++) {
-                scoreArr[i][j] = Integer.parseInt(st.nextToken());
+            for (int j = 1; j < n + 1; j++) {
+                scoreArr[i][j] = scoreArr[i][j - 1] + Integer.parseInt(st.nextToken());
             }
         }
 
         // 시간 입력
-        timeArr = new int[3][n];
+        timeArr = new int[3][n + 1];
         for (int i = 0; i < 3; i++) {
             st = new StringTokenizer(bf.readLine());
-            for (int j = 0; j < n; j++) {
-                timeArr[i][j] = Integer.parseInt(st.nextToken());
+            for (int j = 1; j < n + 1; j++) {
+                timeArr[i][j] = timeArr[i][j - 1] + Integer.parseInt(st.nextToken());
             }
         }
 
-        stList = new List[3];
-        for (int i = 0; i < 3; i++) {
-            stList[i] = new ArrayList<>();
-        }
-
-        // 점수, 시간 누적합
-        for (int i = 0; i < 3; i++) {
-            int totalTime = 0;
-            int totalScore = 0;
-
-            // 아무것도 안하고 가만히 있는 경우
-            stList[i].add(new ScoreTime(0, 0));
-
-            for (int j = 0; j < n; j++) {
-                totalTime += timeArr[i][j];
-                totalScore += scoreArr[i][j];
-
-                // 서브태스크를 풀었을 때 점수가 올라가는 경우만 추가
-                if (totalScore > stList[i].get(stList[i].size() - 1).score) {
-                    stList[i].add(new ScoreTime(totalScore, totalTime));
-                }
-            }
+        int[] dp = new int[n + 1];
+        for (int i = 1; i < n + 1; i++) {
+            dp[i] = Math.max(dp[i - 1], scoreArr[2][i]);
         }
 
         int answer = 0;
-        for (ScoreTime st0 : stList[0]) {
-            // 시간이 부족하여 문제를 풀 수 없는 경우
-            if (st0.time > t) {
-                continue;
-            }
+        for (int i = 0; i < n + 1; i++) {
+            int idx = n;
+            for (int j = 0; j < n + 1; j++) {
+                int time = timeArr[0][i] + timeArr[1][j];
 
-            int remainTime = t - st0.time;
-
-            for (ScoreTime st1 : stList[1]) {
-                // 시간이 부족하여 문제를 풀 수 없는 경우
-                if (st1.time > remainTime) {
-                    continue;
+                if (time > t) {
+                    break;
                 }
 
-                // 3번 문제에 사용할 수 있는 시간
-                int targetTime = remainTime - st1.time;
+                // 시간은 항상 오름차순
+                while (time + timeArr[2][idx] > t) {
+                    idx--;
+                }
 
-                // 문제1번과 문제2번의 조합을 바탕으로 문제3번을 탐색
-                int score2 = binarySearch(targetTime);
-
-                answer = Math.max(answer, st0.score + st1.score + score2);
+                answer = Math.max(answer, scoreArr[0][i] + scoreArr[1][j] + dp[idx]);
             }
         }
 
         System.out.println(answer);
-    }
-
-    // stList는 이미 정렬되어있다.
-    // 시간은 항상 양의 정수이므로 오름차순, 점수는 stList를 구성할 때 증가할 때만 추가했으므로 오름차순
-    private static int binarySearch(int targetTime) {
-        int left = 0;
-        int right = stList[2].size();
-
-        while (left + 1 < right) {
-            int mid = (left + right) / 2;
-            if (stList[2].get(mid).time <= targetTime) {
-                left = mid;
-            } else {
-                right = mid;
-            }
-        }
-
-        return stList[2].get(left).score;
-    }
-
-    private static class ScoreTime {
-        int score;
-        int time;
-
-        public ScoreTime(int score, int time) {
-            this.score = score;
-            this.time = time;
-        }
     }
 }
