@@ -10,8 +10,10 @@ public class Main {
 
     static int n;
     static List<Integer>[] tree;
-    static int[] parent;
+    static int[][] parent;
     static int[] level;
+
+    static int k = 0;
 
     public static void main(String[] args) throws IOException {
         BufferedReader bf = new BufferedReader(new InputStreamReader(System.in));
@@ -33,11 +35,20 @@ public class Main {
             tree[b].add(a);
         }
 
+        // 2^k >= n을 만족하는 최소 k
+        int tmp = 1;
+        while (tmp <= n) {
+            tmp <<= 1;
+            k++;
+        }
+
         // 각 노드들의 레벨 초기화, 부모 노드 초기화
-        parent = new int[n + 1];
+        parent = new int[n + 1][k];
         level = new int[n + 1];
         Arrays.fill(level, -1);
-        dfs(1, 0);
+
+        // 부모 테이블 업데이트
+        setParent();
 
         StringBuilder sb = new StringBuilder();
 
@@ -54,22 +65,43 @@ public class Main {
         System.out.println(sb);
     }
 
+    private static void setParent() {
+        dfs(1, 0);
+        for (int i = 1; i < k; i++) {
+            for (int j = 1; j < n + 1; j++) {
+                parent[j][i] = parent[parent[j][i - 1]][i - 1];
+            }
+        }
+    }
+
     private static int lca(int a, int b) {
+        // 0. a가 더 깊도록 설정
+        if (level[a] < level[b]) {
+            int tmp = a;
+            a = b;
+            b = tmp;
+        }
+
         // 1. 두 노드의 깊이 통일
-        while (level[a] != level[b]) {
-            if (level[a] > level[b]) {
-                a = parent[a];
-            } else {
-                b = parent[b];
+        for (int i = k - 1; i > -1; i--) {
+            if (level[a] - level[b] >= (1 << i)) {
+                a = parent[a][i];
             }
         }
 
-        while (a != b) {
-            a = parent[a];
-            b = parent[b];
+        // 부모가 같도록
+        if (a == b) {
+            return a;
         }
 
-        return a;
+        for (int i = k - 1; i > - 1; i--) {
+            if (parent[a][i] != parent[b][i]) {
+                a = parent[a][i];
+                b = parent[b][i];
+            }
+        }
+
+        return parent[a][0];
     }
 
     private static void dfs(int node, int depth) {
@@ -80,7 +112,7 @@ public class Main {
                 continue;
             }
 
-            parent[next] = node;
+            parent[next][0] = node;
 
             dfs(next, depth + 1);
         }
