@@ -44,7 +44,7 @@ public class Main {
     static int n, m, k;
     static int[][] dp;  // dp[i][j] = i개 중에서 j개를 고르는 경우의 수
 
-    private static final int MAX = 1_000_000_000;
+    private static final int MAX = 1_000_000_001;
 
     public static void main(String[] args) throws IOException {
         BufferedReader bf = new BufferedReader(new InputStreamReader(System.in));
@@ -64,7 +64,7 @@ public class Main {
         for (int i = 1; i < n + m + 1; i++) {
             for (int j = 1; j < n + 1; j++) {
                 dp[i][j] = dp[i - 1][j - 1] + dp[i - 1][j];
-                if (dp[i][j] > MAX) {   // k번째를 벗어난 경우
+                if (dp[i][j] >= MAX) {   // k번째를 벗어난 경우
                     dp[i][j] = MAX;
                 }
             }
