@@ -5,4 +5,5 @@ select
         WHEN size_of_colony <= 1000 THEN 'MEDIUM'
         ELSE 'HIGH'
     END) as SIZE
-from ecoli_data;
+from ecoli_data
+order by id;
