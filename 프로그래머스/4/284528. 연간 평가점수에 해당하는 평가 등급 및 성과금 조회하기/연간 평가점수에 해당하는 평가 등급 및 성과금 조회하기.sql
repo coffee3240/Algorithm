@@ -1,0 +1,28 @@
+# EMP_NO, EMP_NAME, GRADE, BONUS
+WITH SCORE_SUM AS (
+    SELECT EMP_NO, AVG(SCORE) AS SCORE
+    FROM HR_GRADE
+    GROUP BY EMP_NO
+)
+
+SELECT 
+    S.EMP_NO,
+    H.EMP_NAME,
+    CASE
+        WHEN S.SCORE >= 96 THEN 'S'
+        WHEN S.SCORE >= 90 THEN 'A'
+        WHEN S.SCORE >= 80 THEN 'B'
+        ELSE 'C'
+    END AS GRADE,
+    (H.SAL * 
+        CASE
+            WHEN S.SCORE >= 96 THEN 0.2
+            WHEN S.SCORE >= 90 THEN 0.15
+            WHEN S.SCORE >= 80 THEN 0.1
+            ELSE 0
+        END
+    ) AS BONUS
+FROM SCORE_SUM S
+JOIN HR_EMPLOYEES H
+ON S.EMP_NO = H.EMP_NO
+ORDER BY 1;
