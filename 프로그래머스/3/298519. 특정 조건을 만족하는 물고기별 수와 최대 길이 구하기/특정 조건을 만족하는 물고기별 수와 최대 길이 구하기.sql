@@ -1,10 +1,7 @@
 WITH NEW_FISH_INFO AS (
     SELECT 
         FISH_TYPE,
-        CASE
-            WHEN LENGTH <= 10 THEN 10
-            ELSE LENGTH
-        END AS LENGTH
+        COALESCE(LENGTH, 10) AS LENGTH
     FROM FISH_INFO
 )
 
