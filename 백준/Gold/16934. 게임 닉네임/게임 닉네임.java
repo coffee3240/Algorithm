@@ -13,10 +13,12 @@ public class Main {
 
         n = Integer.parseInt(bf.readLine());
 
+        StringBuilder sb = new StringBuilder();
         Trie trie = new Trie();
         for (int i = 0; i < n; i++) {
-            System.out.println(trie.insert(bf.readLine()));
+            sb.append(trie.insert(bf.readLine())).append('\n');
         }
+        System.out.println(sb);
     }
 
     private static class Node {
@@ -60,7 +62,7 @@ public class Main {
                 if (node.count != 1) {
                     alias.append(node.count);
                 }
-                
+
                 return alias.toString();
             }
         }
