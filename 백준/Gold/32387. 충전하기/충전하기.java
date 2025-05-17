@@ -2,45 +2,26 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.StringTokenizer;
-import java.util.TreeSet;
 
-/**
- * 1. 선형탐색
- * - 입력이 (1 0)이 반복되면 O(N * Q)
- * - 시간초과
- *
- * 2. 이분탐색
- * - 정렬되어있지만 꽂혀있거나(T), 아니거나(F) 2가지 값이 존재
- * - 어떻게 탐색하는지 모르겠음
- *
- * 3. TreeSet
- * - ceiling(i) : i보다 크거나 값은 값 중 가장 작은 값, logN
- * - 만약 i번 포트에 전자기기가 꽂혀 있다면, 현재 남아 있는 최소 전력 이상의 포트 중 가장 전력이 작은 포트에 기기를 꽂는다.
- */
 public class Main {
 
-    static int n, q;    // 포트 수, 행동 수
-    static TreeSet<Integer> emptyPort;
+    static int n, q;
+    static int[] tree;
 
     public static void main(String[] args) throws IOException {
         BufferedReader bf = new BufferedReader(new InputStreamReader(System.in));
-        StringTokenizer st;
+        StringTokenizer st = new StringTokenizer(bf.readLine());
 
-        st = new StringTokenizer(bf.readLine());
         n = Integer.parseInt(st.nextToken());
         q = Integer.parseInt(st.nextToken());
 
-        // 처음엔 모든 포트가 비어있음
-        emptyPort = new TreeSet<>();
-        for (int i = 1; i < n + 1; i++) {
-            emptyPort.add(i);
-        }
+        tree = new int[4 * n];
+        init(1, n, 1);
 
-        int[] arr = new int[n + 1]; // 1부터
-
-        StringBuilder sb = new StringBuilder();
-
+        int[] arr = new int[n + 1];
         int count = 0;
+
+        StringBuffer sb = new StringBuffer();
         for (int i = 0; i < q; i++) {
             st = new StringTokenizer(bf.readLine());
             int type = Integer.parseInt(st.nextToken());
@@ -49,43 +30,77 @@ public class Main {
             count++;
 
             if (type == 1) {
-                // 비어있는 경우
-                if (emptyPort.contains(port)) {
-                    emptyPort.remove(port);
-
-                    // 해당 포트가 몇 번째 행동에 의해 꽂힌건지 저장
-                    arr[port] = count;
-
-                    sb.append(port).append('\n');
-                } else {
-                    // 이미 port가 사용중
-                    // 없으면 null 반환
-                    Integer p = emptyPort.ceiling(port);
-                    if (p == null) {   // 사용 가능한 포트가 없는 경우
-                        sb.append(-1).append('\n');
-                    } else {
-                        // 사용 가능한 포트가 있는 경우
-                        emptyPort.remove(p);
-                        arr[p] = count;
-                        sb.append(p).append('\n');
-                    }
-                }
-            } else if (type == 2) {
-                // 꽂혀있지 않은 경우
-                if (arr[port] == 0) {
+                int index = query(1, n, 1, port, n);
+                if (index == Integer.MAX_VALUE) {
                     sb.append(-1).append('\n');
                 } else {
+                    update(1, n, 1, index, 1);
+                    arr[index] = count;
+                    sb.append(index).append('\n');
+                }
+            } else if (type == 2) {
+                if (arr[port] != 0) {
                     sb.append(arr[port]).append('\n');
-
-                    // 해당 포트의 충전기 뽑기
                     arr[port] = 0;
-
-                    // 비어있는 포트에 추가
-                    emptyPort.add(port);
+                    update(1, n, 1, port, 0);
+                } else {
+                    sb.append(-1).append('\n');
                 }
             }
         }
 
         System.out.println(sb);
+    }
+
+    private static void update (int start, int end, int node, int index, int value) {
+        if (index < start || end < index) {
+            return;
+        }
+
+
+        if (start == end) {
+            tree[node] = (value == 0) ? start : Integer.MAX_VALUE;
+            return;
+        }
+
+        int mid = (start + end) / 2;
+        update(start, mid, node * 2, index, value);
+        update(mid + 1, end, node * 2 + 1, index, value);
+
+        tree[node] = Math.min(tree[node * 2], tree[node * 2 + 1]);
+    }
+
+    private static int query (int start, int end, int node, int left, int right) {
+        // 범위 밖
+        if (right < start || end < left) {
+            return Integer.MAX_VALUE;
+        }
+
+        // 범위 안
+        if (left <= start && end <= right) {
+            return tree[node];
+        }
+
+        // 부분 범위 안
+        int mid = (start + end) / 2;
+        return Math.min(
+                query(start, mid, node * 2, left, right),
+                query(mid + 1, end, node * 2 + 1, left, right)
+        );
+    }
+
+    private static int init(int start, int end, int node) {
+        if (start == end) {
+            tree[node] = start;
+            return tree[node];
+        }
+
+        int mid = (start + end) / 2;
+        tree[node] = Math.min(
+                init(start, mid, node * 2),
+                init(mid + 1, end, node * 2 + 1)
+        );
+
+        return tree[node];
     }
 }
