@@ -6,26 +6,26 @@ import java.util.StringTokenizer;
 public class Main {
 
     static int n;
-    static int[] arr;
+    static long[] arr;
 
     public static void main(String[] args) throws IOException {
         BufferedReader bf = new BufferedReader(new InputStreamReader(System.in));
         StringTokenizer st;
 
         n = Integer.parseInt(bf.readLine());
-        arr = new int[n];
+        arr = new long[n];
         st = new StringTokenizer(bf.readLine());
         for (int i = 0; i < n; i++) {
-            arr[i] = Integer.parseInt(st.nextToken());
+            arr[i] = Long.parseLong(st.nextToken());
         }
 
         System.out.println(solve());
     }
 
-    private static int solve() {
+    private static long solve() {
         boolean[] visit = new boolean[n];
         int startIndex = -1;
-        int answer = 0;
+        long answer = 0;
         for (int i = 0; i < n; i++) {
             if (arr[i] != 0) {
                 answer += arr[i];
