@@ -29,6 +29,9 @@ public class Main {
         // 두 학생의 성적을 더하고(A) 배열에서 -A의 수를 구한다.
         long answer = 0;
         for (int i = 0; i < n - 1; i++) {
+            if (student[i] > 0) {
+                break;
+            }
             for (int j = i + 1; j < n; j++) {
                 int sum = student[i] + student[j];
 
