@@ -15,43 +15,42 @@ public class Main {
         n = Integer.parseInt(st.nextToken());   // 행
         m = Integer.parseInt(st.nextToken());   // 열
 
-        arr = new int[n + 1][m + 1];
-        for (int i = 1; i < n + 1; i++) {
+        arr = new int[n][m];
+        for (int i = 0; i < n; i++) {
             st = new StringTokenizer(bf.readLine());
-            for (int j = 1; j < m + 1; j++) {
+            for (int j = 0; j < m; j++) {
                 arr[i][j] = Integer.parseInt(st.nextToken());
             }
         }
 
-        int[][] sumArr = getSumArr();
-        int answer = getMax(sumArr);
+        int max = Integer.MIN_VALUE;
+        for (int top = 0; top < n; top++) {
+            int[] rowSum = new int[m];
 
-        System.out.println(answer);
+            for (int bottom = top; bottom < n; bottom++) {
+                for (int i = 0; i < m; i++) {
+                    rowSum[i] += arr[bottom][i];
+                }
+
+                max = Math.max(max, kadane(rowSum));
+            }
+        }
+
+        System.out.println(max);
     }
 
-    private static int getMax(int[][] arr) {
-        int max = Integer.MIN_VALUE;
-        for (int i = 1; i < n + 1; i++) {
-            for (int j = 1; j < m + 1; j++) {
-                for (int k = i; k < n + 1; k++) {
-                    for (int l = j; l < m + 1; l++) {
-                        max = Math.max(max, arr[k][l] - arr[i - 1][l] - arr[k][j - 1] + arr[i - 1][j - 1]);
-                    }
-                }
-            }
+    private static int kadane(int[] arr) {
+        int max = arr[0];
+        int sum = arr[0];
+
+        for (int i = 1; i < n; i++) {
+            // 현재 값을 포함하는게 최대값인지 아닌지 판단
+            sum = Math.max(arr[i], sum + arr[i]);
+
+            // 최대값 경신
+            max = Math.max(max, sum);
         }
 
         return max;
-    }
-
-    private static int[][] getSumArr() {
-        int[][] sumArr = new int[n + 1][m + 1];
-        for (int i = 1; i < n + 1; i++) {
-            for (int j = 1; j < m + 1; j++) {
-                sumArr[i][j] = arr[i][j] + sumArr[i - 1][j] + sumArr[i][j - 1] - sumArr[i - 1][j - 1];
-            }
-        }
-
-        return sumArr;
     }
 }
