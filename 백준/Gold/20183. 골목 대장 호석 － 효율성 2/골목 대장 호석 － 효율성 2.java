@@ -35,7 +35,7 @@ public class Main {
         }
 
         long left = 0;
-        long right = 1_000_000_000;
+        long right = 1_000_000_001;
         long answer = -1;
 
         while (left + 1 < right) {
