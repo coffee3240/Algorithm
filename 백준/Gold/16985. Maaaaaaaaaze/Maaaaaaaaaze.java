@@ -67,6 +67,10 @@ public class Main {
         if(cnt == 5) {
             // 미로 설계 완료
             answer = Math.min(answer, go());
+            if (answer == 12) {
+                System.out.println(answer);
+                System.exit(0);
+            }
             return;
         }
 
